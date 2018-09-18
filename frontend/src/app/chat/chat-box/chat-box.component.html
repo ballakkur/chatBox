@@ -1,0 +1,180 @@
+<div class="container">
+    <div class="row">
+  
+      <div class="displayBlockMobile d-block d-sm-none" style="width:100%;z-index:1;">
+  
+        <div class="col-sm-12 p-0">
+  
+          <nav class="navbar navbar-expand-md  navbar-dark bg-dark">
+  
+            <a class="navbar-brand text-white">
+              {{userInfo.firstName}} {{userInfo.lastName}}
+              <i class="fa fa-circle online" *ngIf="disconnectedSocket == false"></i>
+              <i class="fa fa-circle offline" *ngIf="disconnectedSocket == true"></i>
+            </a>
+  
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+              aria-expanded="false" aria-label="Toggle navigation">
+  
+              <span class="navbar-toggler-icon"></span>
+  
+            </button>
+  
+            <div class="collapse people-list navbar-collapse" id="navbarSupportedContent">
+              <button (click)="logout()" class="btn btn-info customButton">Logout</button>
+              <ul class="list">
+                <li class="p-2 typeOfChats">
+                  Groups joined:
+                </li>
+                <li class="clearfix cursorPointer" *ngFor="let group of groupsJoined" (click)="userSelectedToChat(group.roomId, group.roomName, group.admin)">
+                  <div class="userPresence" [hidden]="!group.status">
+                    <user-details [userFirstName]="group.roomName" [userLastName]="''" [userStatus]="'Active'" [messageRead]="false"></user-details>
+                  </div>
+                </li>
+                <li class="p-2 typeOfChats">
+                  Other Groups:
+                </li>
+                <li class="clearfix cursorPointer" *ngFor="let group of otherGroups" (click)="groupSelectedToChat(group.roomId,group.roomName)">
+                  <div class="userPresence" [hidden]="!group.status">
+                    <user-details [userFirstName]="group.roomName" [userLastName]="''" [userStatus]="'Active'" [messageRead]="false"></user-details>
+                  </div>
+                </li>
+              </ul>
+  
+            </div>
+  
+          </nav>
+  
+        </div>
+  
+      </div>
+  
+      <div class="col-12 displayNoneMobile d-none d-sm-block col-sm-4 col-md-4 people-list p-0" id="people-list">
+  
+        <div class="p-3 text-white textCapitalize textCenter">
+          {{userInfo.firstName}} {{userInfo.lastName}}
+          <i class="fa fa-circle online" *ngIf="disconnectedSocket == false"></i>
+          <i class="fa fa-circle offline" *ngIf="disconnectedSocket == true"></i>
+          <br>
+          <br>
+          <button (click)="logout()" class="btn btn-info customButton">Logout</button>
+        </div>
+  
+        <form #CreateGroupForm="ngForm" (ngSubmit)="createGroup()">
+          <div class="form-group">
+            <label style="color: white">Group Name</label>
+            <input type="text" class="form-control" name="groupName" [(ngModel)]="groupName" #groupName1="ngModel" required>
+          </div>
+          <div [hidden]='groupName1.valid || groupName1.pristine' class="alert alert-danger">
+            Group name is required
+          </div>
+  
+          <button type="submit" class="btn btn-block btn-success">Create Group</button>
+        </form>
+  
+  
+        <ul class="list">
+          <li class="p-2 typeOfChats">
+            Groups joined:
+          </li>
+          <li class="clearfix cursorPointer" *ngFor="let group of groupsJoined" (click)="userSelectedToChat(group.roomId, group.roomName, group.admin)">
+            <div class="userPresence" [hidden]="!group.status">
+              <user-details [userFirstName]="group.roomName" [userLastName]="''" [userStatus]="'Active'" [messageRead]="false"></user-details>
+            </div>
+          </li>
+          <li class="p-2 typeOfChats">
+            Other Groups:
+          </li>
+          <li class="clearfix cursorPointer" *ngFor="let group of otherGroups" (click)="groupSelectedToChat(group.roomId,group.roomName)">
+            <div class="userPresence" [hidden]="!group.status">
+              <user-details [hidden]="!group.status" [userFirstName]="group.roomName" [userLastName]="''" [userStatus]="'Active'" [messageRead]="false"></user-details>
+            </div>
+          </li>
+        </ul>
+  
+  
+      </div>
+  
+      <div class="col-12 col-sm-8 col-md-8 chat ">
+        <div class="chat-header clearfix mobileMenu" *ngIf="receiverName">
+          <first-char [name]="receiverName" [userBg]="'blue'" [userColor]="'white'" (notify)="showGroupName($event)"></first-char>
+  
+          <div class="chat-about">
+            <div class="chat-with">Chat with {{receiverName}}</div>
+            <div class="chat-with font-green" *ngIf='personTyping'>{{personTyping}} is typing...</div>
+          </div>
+          <div class="dropdown" [hidden]='groupMember'>
+            <button class="btn btn-secondary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fa fa-ellipsis-v"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+              <form class="px-4 py-3" #InviteForm (ngSubmit)="sendInvite()">
+                <div class="form-group">
+                  <label for="exampleDropdownFormEmail1">Email address</label>
+                  <input type="email" class="form-control" name="userMail" [(ngModel)]="userMail" #userMail1="ngModel" placeholder="email@example.com"
+                    required>
+                </div>
+                <div [hidden]='userMail1.valid || userMail1.pristine' class="alert alert-danger">
+                  Email is required
+                </div>
+                <button type="submit" class="btn btn-block btn-primary">Invite</button>
+              </form>
+              <a class="dropdown-item btn" (click)="closeGroup()">Close Group</a>
+              <a class="dropdown-item btn" routerLink="/showDetails">Group Details</a>
+              <a class="dropdown-item btn" (click)="deleteGroup()">Delete Group</a>
+            </div>
+          </div>
+        </div>
+        <!-- end chat-header -->
+  
+        <div #scrollMe [scrollTop]="(scrollToChatTop)?0:scrollMe.scrollHeight" class="chat-history" *ngIf="receiverName">
+  
+          <ul [hidden]='groupMember'>
+            <li class="textCenter" *ngIf="receiverName">
+  
+              <span class="cursorPointer" (click)="loadEarlierPageOfChat()">Load Previous Chat</span>
+  
+              <br>
+  
+              <span *ngIf="loadingPreviousChat == true">Loading...</span>
+  
+            </li>
+            <li class="clearfix" *ngFor="let message of messageList">
+              <div class="message-data" [ngClass]="{'align-right': message.senderId == userInfo.userId}">
+                <span class="message-data-time">{{message?.createdOn | date: 'medium' }}</span> &nbsp; &nbsp;
+                <span class="message-data-name floatLeft" *ngIf="message.senderId != userInfo.userId">
+                  <i class="fa fa-circle online"></i> {{ message?.senderName }}</span>
+                <span class="message-data-name" *ngIf="message.senderId == userInfo.userId">{{ message?.senderName }}</span>
+                <i class="fa fa-circle me" *ngIf="message.senderId == userInfo.userId"></i>
+  
+              </div>
+              <div class="message" [ngClass]="{'float-right other-message': message.senderId == userInfo.userId, 'my-message': message.senderId != userInfo.userId}">
+                {{message?.message }}
+              </div>
+            </li>
+  
+          </ul>
+  
+        </div>
+        <div *ngIf="!receiverName" class="col-sm blankContent">
+          Click on Group to start a GroupChat!!!
+        </div>
+        <!-- end chat-history -->
+  
+        <div class="chat-message clearfix p-2" *ngIf="receiverName" [hidden]='groupMember'>
+          <textarea name="message-to-send" id="message-to-send" (keypress)="userTyping($event)" (keydown)="sendMessageUsingEnter($event)"
+            [(ngModel)]="messageText" placeholder="Type your message" rows="3"></textarea>
+  
+          <button (click)="sendMessage()">Send</button>
+  
+        </div>
+        <!-- end chat-message -->
+        <!--Join Group Button-->
+        <button class="btn btn-primary btn-block" [hidden]="!groupMember" (click)="joinGroup(receiverName,receiverId)">Join Group</button>
+      </div>
+  
+    </div>
+    <!-- end chat -->
+  
+  </div>
+  <!-- end container -->

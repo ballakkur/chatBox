@@ -1,0 +1,14 @@
+.members{
+    background-color: wheat;
+    color: black;
+}
+.groupName{
+    font-size: 3em;
+    font-style: italic;
+    font-weight: 200;
+    color: black;
+}
+.header{
+    background-color: white;
+    color: black;
+}

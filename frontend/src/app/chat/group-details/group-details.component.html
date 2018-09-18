@@ -1,0 +1,45 @@
+<section class="container">
+
+    <div class="row">
+  
+      <div class="col-12 header">
+  
+        <div class="row">
+          <div class="groupName col-12 col-sm-8" [hidden]="!noTextBox">
+            {{roomName | uppercase}}
+          </div>
+          <div [hidden]="!noTextBox" class=" col-12 col-sm-4" style="padding-top: 3%">
+            <!-- <i class="fas fa-pencil-alt"></i> -->
+            <button class="btn btn-block btn-primary" (click)="edit()">Edit</button>
+          </div>
+        </div>
+  
+        <form class="form-inline row" #form1="ngForm" [hidden]="noTextBox">
+  
+          <input type="text" class="col-12 col-sm-8" name="roomName" [(ngModel)]="roomName" #roomName1="ngModel" class="form-control mb-10 mr-sm-10"
+            id="inlineFormInputName2" placeholder="Group name" required>
+  
+          <button type="submit" class="btn btn-block btn-primary col-12 col-sm-4" (click)="saveName()">Save</button>
+  
+          <div [hidden]='roomName1.valid || roomName1.pristine' class="alert alert-danger">
+            Group name is required
+          </div>
+        </form>
+      </div>
+  
+      <div class="col-12 members">
+  
+        <ul class="list">
+  
+          <li class="clearfix cursorPointer col-12" *ngFor="let member of members">
+            <user-details [userFirstName]="member.name" [userLastName]="''" [userStatus]="" [messageRead]=" "></user-details>
+          </li>
+        </ul>
+  
+      </div>
+  
+      <a class="btn btn-block btn-outline-success" routerLink="/chat">Go back</a>
+  
+    </div>
+  
+  </section>
